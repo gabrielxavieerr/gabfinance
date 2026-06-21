@@ -2,111 +2,171 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>GAB — Assistente Financeiro</title>
 <style>
-  :root{--bg:#0f1115;--card:#1a1d25;--text:#e8eaed;--muted:#9aa0ab;
-    --green:#34d399;--red:#f87171;--accent:#60a5fa;--line:#2a2e38;--cs:1;}
-  @media (prefers-color-scheme: light){
-    :root{--bg:#f4f5f7;--card:#fff;--text:#1a1d25;--muted:#6b7280;--line:#e5e7eb;}}
-  [data-theme="dark"]{--bg:#0f1115;--card:#1a1d25;--text:#e8eaed;--muted:#9aa0ab;--green:#34d399;--red:#f87171;--accent:#60a5fa;--line:#2a2e38;}
-  [data-theme="light"]{--bg:#f4f5f7;--card:#fff;--text:#1a1d25;--muted:#6b7280;--green:#16a34a;--red:#dc2626;--accent:#2563eb;--line:#e5e7eb;}
-  *{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,sans-serif}
-  body{margin:0;background:var(--bg);color:var(--text)}
-  header{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:10}
-  header h1{font-size:16px;margin:0;cursor:pointer}
-  .htools{display:flex;gap:8px}
-  .wrap{max-width:1000px;margin:0 auto;padding:20px}
-  .hello{font-size:24px;font-weight:700;margin:6px 0 2px}
-  .sub{color:var(--muted);margin-bottom:22px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(150px*var(--cs)),1fr));gap:14px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:calc(20px*var(--cs));cursor:pointer;transition:.15s;text-align:center}
-  .card:hover{transform:translateY(-3px);border-color:var(--accent)}
-  .card .ico{font-size:calc(30px*var(--cs))}.card .ttl{font-weight:600;margin-top:8px;font-size:calc(15px*var(--cs))}
-  .card .desc{color:var(--muted);font-size:calc(12px*var(--cs));margin-top:4px}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-  .kpi h3{margin:0 0 6px;font-size:12px;color:var(--muted);font-weight:600}
-  .kpi .val{font-size:20px;font-weight:700}.kpi small{color:var(--muted);font-size:11px}
-  .pos{color:var(--green)}.neg{color:var(--red)}
-  .back{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;margin-bottom:12px}
-  h2.view{font-size:20px;margin:0 0 14px}
-  input,select,button,textarea{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit}
-  input[type=color]{padding:2px;height:40px;width:54px;cursor:pointer}
-  button{background:var(--accent);color:#fff;border:none;cursor:pointer;font-weight:600}
-  button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-  button.mini{padding:6px 10px;font-size:13px}
-  button.danger{background:var(--red)}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .formcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:18px}
-  .formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
-  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden}
-  th,td{padding:9px 12px;text-align:left;font-size:13px;border-bottom:1px solid var(--line)}
-  th{color:var(--muted);font-weight:600}
-  .tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);border:1px solid var(--line)}
-  .del{color:var(--red);cursor:pointer;background:none;border:none;font-size:16px}
-  /* Segmented control de período */
-  .seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
-  .seg .chip{padding:8px 16px;border-radius:9px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}
-  .seg .chip.on{background:var(--accent);color:#fff}
-  .navbar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin:14px 0}
-  .navbar button{background:var(--bg);border:1px solid var(--line);color:var(--text);width:40px;height:40px;border-radius:10px;font-size:16px}
-  .navbar .perlabel{flex:1;text-align:center;font-weight:700;font-size:16px;text-transform:capitalize}
-  .chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:13px}
-  .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .chatbar{display:flex;gap:8px;margin:18px 0}.chatbar input{flex:1}
-  .hint{color:var(--muted);font-size:12px;margin-top:6px}
-  .msg{padding:8px 12px;border-radius:10px;margin:6px 0;font-size:13px;background:var(--card);border:1px solid var(--line)}
-  canvas{max-width:100%}.hidden{display:none}
-  label.lbl{font-size:12px;color:var(--muted);display:block;margin-bottom:3px}
-  /* Calendário adaptável */
-  .cal{display:grid;gap:6px}
-  .cal.mes,.cal.semana{grid-template-columns:repeat(7,1fr)}
-  .cal.dia{grid-template-columns:1fr}
-  .cal.ano{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-  .cal .dow{text-align:center;color:var(--muted);font-size:11px;font-weight:600;padding:4px 0}
-  .cal .day{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px;font-size:11px;cursor:pointer;transition:.12s}
-  .cal .day:hover{border-color:var(--accent)}
-  .cal.mes .day{min-height:92px}.cal.semana .day{min-height:150px}
-  .cal.dia .day{min-height:60vh;cursor:default}.cal.ano .day{min-height:90px;text-align:center}
-  .cal .day.empty{background:transparent;border:none;cursor:default}
-  .cal .daynum{color:var(--muted);font-weight:600;margin-bottom:4px;display:flex;justify-content:space-between}
-  .cal .day.has .daynum{color:var(--accent)}
-  .cal .daytot{font-size:10px;color:var(--red);font-weight:700}
-  .cal.ano .bigtot{font-size:18px;font-weight:700;color:var(--red);margin-top:8px}
-  .cal.ano .mname{font-weight:600;font-size:14px}
-  /* Mini card */
-  .mini{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 6px;margin-bottom:4px;position:relative}
-  .mini.paid{border-color:var(--green);opacity:.75}
-  .mini .mv{font-weight:700;color:var(--red);font-size:12px}
-  .mini .mh{font-size:10px;color:var(--accent);font-weight:600}
-  .mini .mt{font-size:10px;color:var(--muted);line-height:1.3}
-  .mini .badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:10px;border:1px solid var(--line);margin-top:2px}
-  .mini .x{position:absolute;top:2px;right:4px;color:var(--red);cursor:pointer;font-size:12px}
-  .mini .pay{position:absolute;top:2px;right:20px;cursor:pointer;font-size:11px}
-  /* Cartão */
-  .ccard{border:1px solid var(--line);border-radius:14px;padding:16px;color:#fff;margin-bottom:6px}
-  .ccard .nome{font-weight:700;font-size:15px}
-  .ccard .info{font-size:11px;opacity:.85;margin-top:2px}
-  .ccard .fat{font-size:22px;font-weight:700;margin-top:10px}
-  .ccard .alert{background:rgba(248,113,113,.25);border:1px solid #f87171;border-radius:8px;padding:4px 8px;font-size:11px;margin-top:8px;display:inline-block}
-  .invcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center}
-  .invcard .iv{font-size:24px;font-weight:700;color:var(--green);margin-top:6px}
-  /* Modal */
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
-  .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:20px}
-  .modal h3{margin:0 0 12px}.modal .close{float:right;cursor:pointer;color:var(--muted);font-size:20px;background:none;border:none}
-  .hourblock{border-left:2px solid var(--accent);padding-left:10px;margin-bottom:10px}
-  .hourblock .ht{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px}
-  input[type=range]{width:100%}
+/* ============================================================
+   GAB — FOLHA DE ESTILO
+   Seções: 1.Variáveis  2.Base  3.Header  4.Cards/Home
+           5.KPIs  6.Formulários  7.Tabelas  8.Calendário
+           9.MiniCards 10.Cartões 11.Investimentos 12.Modal
+           13.Modo Mobile
+   ============================================================ */
+
+/* ---- 1. VARIÁVEIS / TEMA ---- */
+:root{
+  --bg:#0f1115;--card:#1a1d25;--text:#e8eaed;--muted:#9aa0ab;
+  --green:#34d399;--red:#f87171;--accent:#60a5fa;--line:#2a2e38;
+  --cs:1;          /* escala dos cards da home */
+  --maxw:1000px;   /* largura máxima (muda no modo mobile) */
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#f4f5f7;--card:#fff;--text:#1a1d25;--muted:#6b7280;--line:#e5e7eb;}
+}
+[data-theme="dark"]{--bg:#0f1115;--card:#1a1d25;--text:#e8eaed;--muted:#9aa0ab;--green:#34d399;--red:#f87171;--accent:#60a5fa;--line:#2a2e38;}
+[data-theme="light"]{--bg:#f4f5f7;--card:#fff;--text:#1a1d25;--muted:#6b7280;--green:#16a34a;--red:#dc2626;--accent:#2563eb;--line:#e5e7eb;}
+
+/* ---- 2. BASE ---- */
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:20px}
+.hidden{display:none}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.hint{color:var(--muted);font-size:12px;margin-top:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+canvas{max-width:100%}
+label.lbl{font-size:12px;color:var(--muted);display:block;margin-bottom:3px}
+
+/* ---- 3. HEADER ---- */
+header{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:10}
+header h1{font-size:16px;margin:0;cursor:pointer}
+.htools{display:flex;gap:8px}
+
+/* ---- 4. CARDS / HOME ---- */
+.hello{font-size:24px;font-weight:700;margin:6px 0 2px}
+.sub{color:var(--muted);margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(150px*var(--cs)),1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:calc(20px*var(--cs));cursor:pointer;transition:.15s;text-align:center}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.card .ico{font-size:calc(30px*var(--cs))}
+.card .ttl{font-weight:600;margin-top:8px;font-size:calc(15px*var(--cs))}
+.card .desc{color:var(--muted);font-size:calc(12px*var(--cs));margin-top:4px}
+.back{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;margin-bottom:12px}
+h2.view{font-size:20px;margin:0 0 14px}
+
+/* ---- 5. KPIs ---- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.kpi h3{margin:0 0 6px;font-size:12px;color:var(--muted);font-weight:600}
+.kpi .val{font-size:20px;font-weight:700}
+.kpi small{color:var(--muted);font-size:11px}
+
+/* ---- 6. FORMULÁRIOS ---- */
+input,select,button,textarea{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:16px;font-family:inherit}
+input[type=color]{padding:2px;height:40px;width:54px;cursor:pointer}
+button{background:var(--accent);color:#fff;border:none;cursor:pointer;font-weight:600}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+button.mini{padding:6px 10px;font-size:13px}
+button.danger{background:var(--red)}
+.formcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:18px}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.chatbar{display:flex;gap:8px;margin:18px 0}.chatbar input{flex:1}
+.msg{padding:8px 12px;border-radius:10px;margin:6px 0;font-size:13px;background:var(--card);border:1px solid var(--line)}
+input[type=range]{width:100%}
+
+/* ---- 7. TABELAS ---- */
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden}
+th,td{padding:9px 12px;text-align:left;font-size:13px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);border:1px solid var(--line)}
+.del{color:var(--red);cursor:pointer;background:none;border:none;font-size:16px}
+
+/* ---- 8. CALENDÁRIO ---- */
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg .chip{padding:8px 16px;border-radius:9px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}
+.seg .chip.on{background:var(--accent);color:#fff}
+.navbar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin:14px 0}
+.navbar button{background:var(--bg);border:1px solid var(--line);color:var(--text);width:40px;height:40px;border-radius:10px;font-size:16px}
+.navbar .perlabel{flex:1;text-align:center;font-weight:700;font-size:16px;text-transform:capitalize}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:13px}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cal{display:grid;gap:6px}
+.cal.mes,.cal.semana{grid-template-columns:repeat(7,1fr)}
+.cal.dia{grid-template-columns:1fr}
+.cal.ano{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.cal .dow{text-align:center;color:var(--muted);font-size:11px;font-weight:600;padding:4px 0}
+.cal .day{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px;font-size:11px;cursor:pointer;transition:.12s}
+.cal .day:hover{border-color:var(--accent)}
+.cal.mes .day{min-height:92px}.cal.semana .day{min-height:150px}
+.cal.dia .day{min-height:60vh;cursor:default}.cal.ano .day{min-height:90px;text-align:center}
+.cal .day.empty{background:transparent;border:none;cursor:default}
+.cal .daynum{color:var(--muted);font-weight:600;margin-bottom:4px;display:flex;justify-content:space-between}
+.cal .day.has .daynum{color:var(--accent)}
+.cal .daytot{font-size:10px;color:var(--red);font-weight:700}
+.cal.ano .bigtot{font-size:18px;font-weight:700;color:var(--red);margin-top:8px}
+.cal.ano .mname{font-weight:600;font-size:14px}
+
+/* ---- 9. MINI CARDS ---- */
+.mini{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 6px;margin-bottom:4px;position:relative}
+.mini.paid{border-color:var(--green);opacity:.75}
+.mini .mv{font-weight:700;color:var(--red);font-size:12px}
+.mini .mh{font-size:10px;color:var(--accent);font-weight:600}
+.mini .mt{font-size:10px;color:var(--muted);line-height:1.3}
+.mini .badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:10px;border:1px solid var(--line);margin-top:2px}
+.mini .x{position:absolute;top:2px;right:4px;color:var(--red);cursor:pointer;font-size:12px}
+.mini .pay{position:absolute;top:2px;right:20px;cursor:pointer;font-size:11px}
+
+/* ---- 10. CARTÕES ---- */
+.ccard{border:1px solid var(--line);border-radius:14px;padding:16px;color:#fff;margin-bottom:6px}
+.ccard .nome{font-weight:700;font-size:15px}
+.ccard .info{font-size:11px;opacity:.85;margin-top:2px}
+.ccard .fat{font-size:22px;font-weight:700;margin-top:10px}
+.ccard .alert{background:rgba(248,113,113,.25);border:1px solid #f87171;border-radius:8px;padding:4px 8px;font-size:11px;margin-top:8px;display:inline-block}
+
+/* ---- 11. INVESTIMENTOS ---- */
+.invcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center}
+.invcard .iv{font-size:24px;font-weight:700;color:var(--green);margin-top:6px}
+
+/* ---- 12. MODAL ---- */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:20px}
+.modal h3{margin:0 0 12px}.modal .close{float:right;cursor:pointer;color:var(--muted);font-size:20px;background:none;border:none}
+.hourblock{border-left:2px solid var(--accent);padding-left:10px;margin-bottom:10px}
+.hourblock .ht{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px}
+
+/* ---- 13. MODO MOBILE (iPhone) ---- */
+[data-device="mobile"]{--maxw:480px;}
+[data-device="mobile"] .grid{grid-template-columns:repeat(2,1fr)}
+[data-device="mobile"] .formgrid{grid-template-columns:1fr}
+[data-device="mobile"] .kpis{grid-template-columns:1fr 1fr}
+[data-device="mobile"] .cal.mes,[data-device="mobile"] .cal.semana{grid-template-columns:repeat(7,1fr);gap:2px}
+[data-device="mobile"] .cal .day{padding:3px;min-height:64px;font-size:9px}
+[data-device="mobile"] .cal .dow{font-size:9px}
+[data-device="mobile"] .mini{padding:3px 4px}
+[data-device="mobile"] .seg .chip{padding:7px 10px;font-size:12px}
+[data-device="mobile"] header h1{font-size:15px}
+[data-device="mobile"] .hello{font-size:20px}
+[data-device="mobile"] table{display:block;overflow-x:auto;white-space:nowrap}
 </style>
 </head>
 <body>
+
+<!-- ============================================================
+     HEADER (tema, device, config)
+     ============================================================ -->
 <header><h1 id="home-link">💰 GAB</h1>
-  <div class="htools"><button class="ghost mini" id="btnTheme">🌙</button><button class="ghost mini" id="btnCfgTop">⚙️</button></div>
+  <div class="htools">
+    <button class="ghost mini" id="btnDevice" title="Alternar PC/Mobile">🖥️</button>
+    <button class="ghost mini" id="btnTheme">🌙</button>
+    <button class="ghost mini" id="btnCfgTop">⚙️</button>
+  </div>
 </header>
 
-<!-- HOME -->
+<!-- ============================================================
+     VIEW: HOME
+     ============================================================ -->
 <div class="wrap" id="view-home">
   <div class="hello" id="hello">Bem-vindo</div>
   <div class="sub" id="hellosub"></div>
@@ -123,7 +183,9 @@
   </div>
 </div>
 
-<!-- ENTRADAS -->
+<!-- ============================================================
+     VIEW: ENTRADAS
+     ============================================================ -->
 <div class="wrap hidden" id="view-entradas">
   <button class="back" data-back>← Voltar</button><h2 class="view">📥 Entradas</h2>
   <div class="formcard"><div class="formgrid">
@@ -137,7 +199,9 @@
   <table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Onde</th><th>Ciclo</th><th>Valor</th><th>Pago</th><th></th></tr></thead><tbody id="e-tbody"></tbody></table>
 </div>
 
-<!-- SAIDAS -->
+<!-- ============================================================
+     VIEW: SAIDAS
+     ============================================================ -->
 <div class="wrap hidden" id="view-saidas">
   <button class="back" data-back>← Voltar</button><h2 class="view">📤 Saídas</h2>
   <div class="formcard"><div class="formgrid">
@@ -149,7 +213,6 @@
     <div><label class="lbl">Forma / Cartão</label><select id="s-onde"></select></div>
     <div><label class="lbl">Parcelas</label><input id="s-parc" value="1"></div>
   </div><div class="row" style="margin-top:12px"><button id="s-save">Registrar saída</button></div></div>
-
   <div class="row" style="justify-content:center"><div class="seg" id="seg-per">
     <button class="chip" data-per="dia">Dia</button><button class="chip" data-per="semana">Semana</button>
     <button class="chip on" data-per="mes">Mês</button><button class="chip" data-per="ano">Ano</button></div></div>
@@ -158,7 +221,9 @@
   <div id="s-cal"></div>
 </div>
 
-<!-- CARTOES -->
+<!-- ============================================================
+     VIEW: CARTOES
+     ============================================================ -->
 <div class="wrap hidden" id="view-cartoes">
   <button class="back" data-back>← Voltar</button><h2 class="view">💳 Cartões</h2>
   <div class="formcard"><h3 style="margin-top:0">Registrar gasto no crédito</h3>
@@ -177,14 +242,16 @@
       <div><label class="lbl">Nome</label><input id="nc-nome" placeholder="Ex: Gabriel Nubank"></div>
       <div><label class="lbl">Titular</label><input id="nc-tit" placeholder="Gabriel"></div>
       <div><label class="lbl">Dia vencimento</label><input id="nc-venc" placeholder="1"></div>
-      <div><label class="lbl">Dia fechamento</label><input id="nc-fech" placeholder="24"></div>
+      <div><label class="lbl">Dia fechamento (vazio = auto -7)</label><input id="nc-fech" placeholder="auto"></div>
       <div><label class="lbl">Limite</label><input id="nc-lim" placeholder="2000,00"></div>
       <div><label class="lbl">Cor</label><input id="nc-cor" type="color" value="#3b3f4d"></div>
     </div><div class="row" style="margin-top:12px"><button id="nc-save">Criar cartão</button></div></div>
   <div id="cc-list"></div>
 </div>
 
-<!-- INVESTIMENTOS -->
+<!-- ============================================================
+     VIEW: INVESTIMENTOS
+     ============================================================ -->
 <div class="wrap hidden" id="view-investimentos">
   <button class="back" data-back>← Voltar</button><h2 class="view">📈 Investimentos</h2>
   <div id="inv-cards" class="grid" style="margin-bottom:18px"></div>
@@ -199,7 +266,9 @@
   <table><thead><tr><th>Data</th><th>Caixinha</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th></th></tr></thead><tbody id="iv-tbody"></tbody></table>
 </div>
 
-<!-- SALDOS -->
+<!-- ============================================================
+     VIEW: SALDOS
+     ============================================================ -->
 <div class="wrap hidden" id="view-saldos">
   <button class="back" data-back>← Voltar</button><h2 class="view">⚖️ Saldos</h2>
   <div class="formcard"><label class="lbl">Saldo atual (atualiza sozinho quando você marca contas como pagas)</label>
@@ -213,7 +282,9 @@
   </div>
 </div>
 
-<!-- GRAFICOS -->
+<!-- ============================================================
+     VIEW: GRAFICOS
+     ============================================================ -->
 <div class="wrap hidden" id="view-graficos">
   <button class="back" data-back>← Voltar</button><h2 class="view">📊 Gastos por categoria</h2>
   <div class="row" style="margin-bottom:12px"><select id="g-mes"></select></div>
@@ -221,7 +292,9 @@
   <div class="formcard"><canvas id="g-bar" height="220"></canvas></div>
 </div>
 
-<!-- CONFIG -->
+<!-- ============================================================
+     VIEW: CONFIG
+     ============================================================ -->
 <div class="wrap hidden" id="view-config">
   <button class="back" data-back>← Voltar</button><h2 class="view">⚙️ Configurações</h2>
   <div class="formcard"><h3 style="margin-top:0">Seu nome</h3>
@@ -232,7 +305,7 @@
   <div class="formcard"><h3 style="margin-top:0">Conexão Supabase</h3>
     <label class="lbl">Project URL</label><input id="cfgUrl" style="width:100%;margin-bottom:8px">
     <label class="lbl">anon key</label><input id="cfgKey" style="width:100%;margin-bottom:8px">
-    <div class="row"><button id="cfgSave">Salvar e reconectar</button><span class="hint" id="conn-status"></span></div></div>
+    <div class="row"><button id="cfgSave">Salvar e reconectar</button><button class="ghost" id="cfgTest">Testar conexão</button><span class="hint" id="conn-status"></span></div></div>
   <div class="formcard"><h3 style="margin-top:0">Categorias de saída</h3><div id="cfg-cats" class="row" style="margin-top:8px"></div></div>
   <div class="formcard" style="border-color:var(--red)"><h3 style="margin-top:0;color:var(--red)">☠️ Zona de perigo</h3>
     <p class="hint">Apaga TODOS os dados (lançamentos, cartões, investimentos, configs). As tabelas permanecem.</p>
@@ -242,10 +315,20 @@
 <div id="modal-root"></div>
 
 <script type="module">
+/* ============================================================
+   GAB — SCRIPT PRINCIPAL
+   Seções: 1.Imports  2.Constantes  3.Tema/Escala/Device
+           4.Conexão Supabase  5.Data Layer  6.Helpers
+           7.Navegação  8.Home/Chat  9.Pagar  10.Entradas
+           11.Saídas/Calendário  12.Cartões  13.Investimentos
+           14.Saldos  15.Gráficos  16.Config  17.Utils  18.Init
+   ============================================================ */
+
+/* ---- 1. IMPORTS ---- */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Chart from 'https://esm.sh/chart.js@4/auto'
 
-/* LISTAS */
+/* ---- 2. CONSTANTES ---- */
 const ENTRADA_CARTOES=['ALIMENTAÇÃO','BILHETE ÚNICO']
 const BANCOS=['Nubank','Inter','Bradesco','Mercado Pago','Caixa','Dinheiro']
 const TIPOS_ENTRADA=['Salário','Freelance / Extra','Vale Alimentação','Bilhete Único','Reembolso','Outros']
@@ -256,25 +339,41 @@ const DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
 const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 let CARTOES=[]
 
-/* TEMA */
+/* ---- 3. TEMA / ESCALA / DEVICE ---- */
 function applyTheme(t){const h=document.documentElement;if(t){h.setAttribute('data-theme',t);h.style.colorScheme=t}else{h.removeAttribute('data-theme');h.style.colorScheme='light dark'}}
 function effTheme(){return localStorage.getItem('gab_theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
 function updThemeIcon(){$('btnTheme').textContent=effTheme()==='dark'?'☀️':'🌙'}
 applyTheme(localStorage.getItem('gab_theme'))
-/* ESCALA CARDS */
-function applyScale(){const s=localStorage.getItem('gab_cardscale')||'1';document.documentElement.style.setProperty('--cs',s)}
+
+function applyScale(){document.documentElement.style.setProperty('--cs',localStorage.getItem('gab_cardscale')||'1')}
 applyScale()
 
-/* CONEXÃO */
+// Modo PC <-> Mobile
+function applyDevice(){const d=localStorage.getItem('gab_device')||'auto'
+  if(d==='mobile')document.documentElement.setAttribute('data-device','mobile')
+  else if(d==='pc')document.documentElement.removeAttribute('data-device')
+  else{ // auto: detecta largura
+    if(innerWidth<=600)document.documentElement.setAttribute('data-device','mobile')
+    else document.documentElement.removeAttribute('data-device')}}
+function updDeviceIcon(){const d=localStorage.getItem('gab_device')||'auto'
+  $('btnDevice').textContent=d==='mobile'?'📱':d==='pc'?'🖥️':'🔄'}
+applyDevice()
+
+/* ---- 4. CONEXÃO SUPABASE ---- */
 const cfg=JSON.parse(localStorage.getItem('gab_cfg')||'{}')
 let supabase=(cfg.url&&cfg.key)?createClient(cfg.url,cfg.key):null
 
-/* DATA LAYER */
+/* ---- 5. DATA LAYER (com cache de leitura p/ performance) ---- */
+let _cacheLanc=null
+function invalidate(){_cacheLanc=null} // limpa cache após escrita
 const db={
-  async list(){if(supabase){const{data,error}=await supabase.from('lancamentos').select('*').order('data');if(error){alert('Erro: '+error.message);return[]}return data}return JSON.parse(localStorage.getItem('gab_lanc')||'[]')},
-  async add(rows){if(supabase){const{error}=await supabase.from('lancamentos').insert(rows);if(error)alert('Erro: '+error.message)}else{const a=JSON.parse(localStorage.getItem('gab_lanc')||'[]');rows.forEach(r=>{r.id=Date.now()+Math.floor(Math.random()*9999);a.push(r)});localStorage.setItem('gab_lanc',JSON.stringify(a))}},
-  async update(id,f){if(supabase){await supabase.from('lancamentos').update(f).eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_lanc')||'[]').map(x=>x.id==id?{...x,...f}:x);localStorage.setItem('gab_lanc',JSON.stringify(a))}},
-  async del(id){if(supabase){await supabase.from('lancamentos').delete().eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_lanc')||'[]').filter(x=>x.id!=id);localStorage.setItem('gab_lanc',JSON.stringify(a))}},
+  async list(){
+    if(_cacheLanc)return _cacheLanc
+    if(supabase){const{data,error}=await supabase.from('lancamentos').select('*').order('data');if(error){alert('Erro: '+error.message);return[]}_cacheLanc=data;return data}
+    _cacheLanc=JSON.parse(localStorage.getItem('gab_lanc')||'[]');return _cacheLanc},
+  async add(rows){invalidate();if(supabase){const{error}=await supabase.from('lancamentos').insert(rows);if(error)alert('Erro: '+error.message)}else{const a=JSON.parse(localStorage.getItem('gab_lanc')||'[]');rows.forEach(r=>{r.id=Date.now()+Math.floor(Math.random()*9999);a.push(r)});localStorage.setItem('gab_lanc',JSON.stringify(a))}},
+  async update(id,f){invalidate();if(supabase){await supabase.from('lancamentos').update(f).eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_lanc')||'[]').map(x=>x.id==id?{...x,...f}:x);localStorage.setItem('gab_lanc',JSON.stringify(a))}},
+  async del(id){invalidate();if(supabase){await supabase.from('lancamentos').delete().eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_lanc')||'[]').filter(x=>x.id!=id);localStorage.setItem('gab_lanc',JSON.stringify(a))}},
   async cards(){if(supabase){const{data}=await supabase.from('cartoes').select('*').order('nome');return data||[]}return JSON.parse(localStorage.getItem('gab_cards')||'[]')},
   async addCard(c){if(supabase){await supabase.from('cartoes').insert([c])}else{const a=JSON.parse(localStorage.getItem('gab_cards')||'[]');c.id=Date.now();a.push(c);localStorage.setItem('gab_cards',JSON.stringify(a))}},
   async updCard(id,f){if(supabase){await supabase.from('cartoes').update(f).eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_cards')||'[]').map(x=>x.id==id?{...x,...f}:x);localStorage.setItem('gab_cards',JSON.stringify(a))}},
@@ -284,10 +383,10 @@ const db={
   async delInv(id){if(supabase){await supabase.from('investimentos').delete().eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_inv')||'[]').filter(x=>x.id!=id);localStorage.setItem('gab_inv',JSON.stringify(a))}},
   async getCfg(k){if(supabase){const{data}=await supabase.from('config').select('valor').eq('chave',k).maybeSingle();return data?.valor??null}return JSON.parse(localStorage.getItem('gab_kv')||'{}')[k]??null},
   async setCfg(k,v){if(supabase){await supabase.from('config').upsert({chave:k,valor:String(v),updated_at:new Date().toISOString()})}else{const o=JSON.parse(localStorage.getItem('gab_kv')||'{}');o[k]=v;localStorage.setItem('gab_kv',JSON.stringify(o))}},
-  async wipe(){if(supabase){await supabase.from('lancamentos').delete().neq('id',0);await supabase.from('cartoes').delete().neq('id',0);await supabase.from('investimentos').delete().neq('id',0);await supabase.from('config').delete().neq('chave','___none___')}else{['gab_lanc','gab_cards','gab_inv','gab_kv'].forEach(k=>localStorage.removeItem(k))}}
+  async wipe(){invalidate();if(supabase){await supabase.from('lancamentos').delete().neq('id',0);await supabase.from('cartoes').delete().neq('id',0);await supabase.from('investimentos').delete().neq('id',0);await supabase.from('config').delete().neq('chave','___none___')}else{['gab_lanc','gab_cards','gab_inv','gab_kv'].forEach(k=>localStorage.removeItem(k))}}
 }
 
-/* HELPERS */
+/* ---- 6. HELPERS ---- */
 const fmt=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2})
 const $=id=>document.getElementById(id)
 const hoje=()=>new Date()
@@ -298,16 +397,18 @@ function isCartaoCredito(o){return nomesCartoes().includes(o)}
 function fillSelect(el,arr,first){el.innerHTML=(first?`<option value="">${first}</option>`:'')+arr.map(x=>`<option>${x}</option>`).join('')}
 function formaTexto(l){if(l.cartao)return'💳 '+l.cartao;const p=l.pagamento||'-';return({pix:'Pix',debito:'Débito',dinheiro:'Dinheiro',boleto:'Boleto'})[p]||p}
 
-/* NAV */
+/* ---- 7. NAVEGAÇÃO ---- */
 async function go(view){document.querySelectorAll('.wrap').forEach(w=>w.classList.add('hidden'))
   $('view-'+view).classList.remove('hidden');window.scrollTo(0,0);CARTOES=await db.cards()
-  ({entradas:renderEntradas,saidas:renderSaidas,cartoes:renderCartoes,investimentos:renderInv,saldos:renderSaldos,graficos:renderGraficos,config:renderConfig,home:renderHome}[view])?.()}
+  ;({entradas:renderEntradas,saidas:renderSaidas,cartoes:renderCartoes,investimentos:renderInv,saldos:renderSaldos,graficos:renderGraficos,config:renderConfig,home:renderHome}[view])?.()}
 document.querySelectorAll('.card[data-go]').forEach(c=>c.onclick=()=>go(c.dataset.go))
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>go('home'))
 $('home-link').onclick=()=>go('home');$('btnCfgTop').onclick=()=>go('config')
 $('btnTheme').onclick=()=>{const n=effTheme()==='dark'?'light':'dark';localStorage.setItem('gab_theme',n);applyTheme(n);updThemeIcon()}
+// Toggle device: auto -> pc -> mobile -> auto
+$('btnDevice').onclick=()=>{const d=localStorage.getItem('gab_device')||'auto';const n=d==='auto'?'pc':d==='pc'?'mobile':'auto';localStorage.setItem('gab_device',n);applyDevice();updDeviceIcon()}
 
-/* HOME */
+/* ---- 8. HOME / CHAT ---- */
 async function renderHome(){const nome=(await db.getCfg('nome'))||'Gabriel';const h=hoje().getHours(),s=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'
   $('hello').textContent=`${s}, ${nome}! 👋`;$('hellosub').textContent=hoje().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}
 function interpretar(txt){let t=' '+txt.toLowerCase()+' '
@@ -341,7 +442,7 @@ async function enviarChat(){const txt=$('chat').value.trim();if(!txt)return;cons
   $('chatresp').innerHTML=`<div class="msg">${r} — dia ${p.dia}.</div>`;$('chat').value=''}
 $('send').onclick=enviarChat;$('chat').addEventListener('keydown',e=>{if(e.key==='Enter')enviarChat()})
 
-/* PAGAR (marca realizado e ajusta saldo atual) */
+/* ---- 9. PAGAR (marca realizado e ajusta saldo atual) ---- */
 async function togglePaid(id){const all=await db.list(),l=all.find(x=>x.id==id);if(!l)return
   const novo=l.status==='realizado'?'previsto':'realizado'
   let sa=parseFloat((await db.getCfg('saldo_atual'))||'0')
@@ -349,7 +450,7 @@ async function togglePaid(id){const all=await db.list(),l=all.find(x=>x.id==id);
   sa += novo==='realizado'? delta : -delta
   await db.update(id,{status:novo});await db.setCfg('saldo_atual',sa)}
 
-/* ENTRADAS */
+/* ---- 10. ENTRADAS ---- */
 async function renderEntradas(){fillSelect($('e-tipo'),TIPOS_ENTRADA);fillSelect($('e-onde'),[...BANCOS,...ENTRADA_CARTOES])
   if(!$('e-data').value)$('e-data').valueAsDate=hoje()
   const all=(await db.list()).filter(l=>l.tipo==='entrada').sort((a,b)=>b.data.localeCompare(a.data))
@@ -365,7 +466,7 @@ $('e-save').onclick=async()=>{const valor=parseValor($('e-valor').value);if(!val
   rows.forEach(r=>{r.cartao=ENTRADA_CARTOES.includes(onde)?onde:null;r.banco=BANCOS.includes(onde)?onde:null;r.pagamento=ENTRADA_CARTOES.includes(onde)?'cartao':null})
   await db.add(rows);$('e-desc').value='';$('e-valor').value='';renderEntradas()}
 
-/* SAIDAS - calendário */
+/* ---- 11. SAÍDAS / CALENDÁRIO ---- */
 let perTipo='mes',perRef=hoje()
 function rangePeriodo(){const r=new Date(perRef),y=r.getFullYear(),m=r.getMonth(),d=r.getDate();let ini,fim,label
   if(perTipo==='dia'){ini=fim=new Date(y,m,d);label=r.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}
@@ -423,7 +524,7 @@ $('s-save').onclick=async()=>{const valor=parseValor($('s-valor').value);if(!val
   await db.add(gerarRows({valor,tipo:'saida',dia,hora:$('s-hora').value||null,onde,cat:$('s-cat').value,pagamento:isCartaoCredito(onde)?'credito':onde.toLowerCase(),parcelas:parseInt($('s-parc').value)||1,desc:$('s-desc').value||'Saída'},new Date(data)))
   $('s-desc').value='';$('s-valor').value='';$('s-hora').value='';$('s-parc').value='1';renderSaidas()}
 
-/* CARTOES */
+/* ---- 12. CARTÕES ---- */
 function faturaMes(dataStr,fech){const d=new Date(dataStr+'T00:00:00');let fm=new Date(d.getFullYear(),d.getMonth(),1);if(d.getDate()>(fech||31))fm.setMonth(fm.getMonth()+1);return fm.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}
 async function renderCartoes(){fillSelect($('cc-cartao'),nomesCartoes());fillSelect($('cc-cat'),CATEGORIAS);if(!$('cc-data').value)$('cc-data').valueAsDate=hoje()
   const all=(await db.list()).filter(l=>l.cartao&&l.tipo==='saida')
@@ -453,10 +554,14 @@ async function enviarChatCartao(){const txt=$('cc-chat').value.trim();if(!txt)re
   await lancarCartao({...p,tipo:'saida'});$('cc-resp').innerHTML=`<div class="msg">✅ ${fmt(p.parcelas>1?p.valor*p.parcelas:p.valor)} no ${p.onde}${p.parcelas>1?` em ${p.parcelas}x`:''}.</div>`;$('cc-chat').value='';renderCartoes()}
 $('cc-send').onclick=enviarChatCartao;$('cc-chat').addEventListener('keydown',e=>{if(e.key==='Enter')enviarChatCartao()})
 $('nc-save').onclick=async()=>{const nome=$('nc-nome').value.trim();if(!nome)return alert('Dê um nome')
-  await db.addCard({nome,titular:$('nc-tit').value.trim()||null,vencimento:parseInt($('nc-venc').value)||null,fechamento:parseInt($('nc-fech').value)||null,limite:parseValor($('nc-lim').value)||null,cor:$('nc-cor').value,ciclo:30})
+  const venc=parseInt($('nc-venc').value)||null
+  // fechamento automático: 7 dias antes do vencimento, se não informado
+  let fech=parseInt($('nc-fech').value)
+  if(!fech&&venc){fech=venc-7;if(fech<=0)fech+=30}
+  await db.addCard({nome,titular:$('nc-tit').value.trim()||null,vencimento:venc,fechamento:fech||null,limite:parseValor($('nc-lim').value)||null,cor:$('nc-cor').value,ciclo:30})
   CARTOES=await db.cards();['nc-nome','nc-tit','nc-venc','nc-fech','nc-lim'].forEach(i=>$(i).value='');renderCartoes()}
 
-/* INVESTIMENTOS */
+/* ---- 13. INVESTIMENTOS ---- */
 async function renderInv(){if(!$('iv-data').value)$('iv-data').valueAsDate=hoje()
   const all=await db.invs()
   const nomes=[...new Set([...CAIXINHAS,...all.map(i=>i.caixinha)])]
@@ -473,7 +578,7 @@ $('iv-save').onclick=async()=>{const cx=$('iv-cx').value.trim()||'Caixinha',valo
   await db.addInv({data:$('iv-data').value,caixinha:cx,tipo:$('iv-tipo').value,valor:Number(valor.toFixed(2)),descricao:$('iv-desc').value||null})
   $('iv-valor').value='';$('iv-desc').value='';renderInv()}
 
-/* SALDOS */
+/* ---- 14. SALDOS ---- */
 function mesesDisp(all){const ms=[...new Set(all.map(l=>l.data.slice(0,7)))].sort().reverse();const at=hoje().toISOString().slice(0,7);if(!ms.includes(at))ms.unshift(at);return ms}
 async function renderSaldos(){const all=await db.list(),sel=$('saldo-mes'),atual=sel.value||hoje().toISOString().slice(0,7)
   sel.innerHTML=mesesDisp(all).map(m=>`<option value="${m}">${m}</option>`).join('');sel.value=atual
@@ -489,7 +594,7 @@ async function renderSaldos(){const all=await db.list(),sel=$('saldo-mes'),atual
 $('saldo-save').onclick=async()=>{await db.setCfg('saldo_atual',parseValor($('saldo-atual').value)||0);renderSaldos()}
 $('saldo-mes').onchange=renderSaldos
 
-/* GRAFICOS */
+/* ---- 15. GRÁFICOS ---- */
 let pie,bar
 async function renderGraficos(){const all=await db.list(),sel=$('g-mes'),atual=sel.value||hoje().toISOString().slice(0,7)
   sel.innerHTML=mesesDisp(all).map(m=>`<option value="${m}">${m}</option>`).join('');sel.value=atual
@@ -501,21 +606,46 @@ async function renderGraficos(){const all=await db.list(),sel=$('g-mes'),atual=s
   bar=new Chart($('g-bar'),{type:'bar',data:{labels,datasets:[{label:'R$',data:vals,backgroundColor:CORES}]},options:{plugins:{legend:{display:false},title:{display:true,text:'Total por categoria',color:col}},scales:{x:{ticks:{color:col}},y:{ticks:{color:col}}}}})}
 $('g-mes').onchange=renderGraficos
 
-/* CONFIG */
-async function renderConfig(){$('cfg-nome').value=(await db.getCfg('nome'))||'Gabriel';$('cfgUrl').value=cfg.url||'';$('cfgKey').value=cfg.key||''
-  $('conn-status').textContent=supabase?'🟢 conectado':'🔴 modo local';$('cfg-cats').innerHTML=CATEGORIAS.map(c=>`<span class="chip">${c}</span>`).join('')
-  $('cfg-scale').value=localStorage.getItem('gab_cardscale')||'1'}
+/* ---- 16. CONFIG (com teste de conexão real) ---- */
+async function testarConexao(url,key){
+  try{const test=createClient(url,key)
+    const{error}=await test.from('lancamentos').select('id').limit(1)
+    return error?{ok:false,msg:error.message}:{ok:true}
+  }catch(e){return{ok:false,msg:e.message}}}
+async function renderConfig(){
+  $('cfg-nome').value=(await db.getCfg('nome'))||'Gabriel'
+  $('cfgUrl').value=cfg.url||'';$('cfgKey').value=cfg.key||''
+  $('cfg-cats').innerHTML=CATEGORIAS.map(c=>`<span class="chip">${c}</span>`).join('')
+  $('cfg-scale').value=localStorage.getItem('gab_cardscale')||'1'
+  // status detalhado
+  if(!supabase){$('conn-status').textContent='🔴 modo local (dados só neste navegador)';return}
+  $('conn-status').textContent='🟡 testando conexão...'
+  const r=await testarConexao(cfg.url,cfg.key)
+  $('conn-status').textContent=r.ok?'🟢 conectado ao Supabase':'🔴 erro: '+r.msg}
 $('cfg-nome-save').onclick=async()=>{await db.setCfg('nome',$('cfg-nome').value.trim()||'Gabriel');alert('Salvo!');renderHome()}
 $('cfg-scale').oninput=()=>{localStorage.setItem('gab_cardscale',$('cfg-scale').value);applyScale()}
-$('cfgSave').onclick=()=>{localStorage.setItem('gab_cfg',JSON.stringify({url:$('cfgUrl').value.trim(),key:$('cfgKey').value.trim()}));location.reload()}
+$('cfgTest').onclick=async()=>{const url=$('cfgUrl').value.trim(),key=$('cfgKey').value.trim()
+  if(!url||!key)return alert('Preencha URL e key');$('conn-status').textContent='🟡 testando...'
+  const r=await testarConexao(url,key);$('conn-status').textContent=r.ok?'🟢 conexão OK! Pode salvar.':'🔴 '+r.msg}
+$('cfgSave').onclick=async()=>{const url=$('cfgUrl').value.trim(),key=$('cfgKey').value.trim()
+  if(!url||!key)return alert('Preencha URL e anon key')
+  if(!url.startsWith('https://'))return alert('A URL deve começar com https://')
+  $('conn-status').textContent='🟡 validando...'
+  const r=await testarConexao(url,key)
+  if(!r.ok)return alert('Não conectou: '+r.msg)
+  localStorage.setItem('gab_cfg',JSON.stringify({url,key}))
+  alert('✅ Conectado! A página vai recarregar.');location.reload()}
 $('btn-death').onclick=async()=>{if(!confirm('APAGAR TODOS os dados? As tabelas permanecem.'))return;if(!confirm('Tem CERTEZA absoluta? Última chance!'))return;await db.wipe();alert('Tudo apagado.');location.reload()}
 
-/* UTIL */
+/* ---- 17. UTILS ---- */
 function bindDel(id,cb){document.querySelectorAll('#'+id+' .del').forEach(b=>b.onclick=async()=>{if(confirm('Excluir?')){await db.del(b.dataset.id);cb()}})}
 function bindPay(id,cb){document.querySelectorAll('#'+id+' .pay').forEach(b=>b.onclick=async()=>{await togglePaid(b.dataset.pay);cb()})}
 
-/* INÍCIO */
-updThemeIcon();go('home')
+/* ---- 18. INIT ---- */
+updThemeIcon();updDeviceIcon()
+// reaplica device ao girar/redimensionar (modo auto)
+addEventListener('resize',()=>{if((localStorage.getItem('gab_device')||'auto')==='auto')applyDevice()})
+go('home')
 </script>
 </body>
 </html>
