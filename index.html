@@ -176,6 +176,7 @@ th{color:var(--muted);font-weight:600}
     <div class="card" data-go="entradas"><div class="ico">📥</div><div class="ttl">Entradas</div><div class="desc">Receitas</div></div>
     <div class="card" data-go="saidas"><div class="ico">📤</div><div class="ttl">Saídas</div><div class="desc">Calendário</div></div>
     <div class="card" data-go="cartoes"><div class="ico">💳</div><div class="ttl">Cartões</div><div class="desc">Faturas</div></div>
+    <div class="card" data-go="dividas"><div class="ico">🔴</div><div class="ttl">Dívidas</div><div class="desc">Parcelas e quitação</div></div>
     <div class="card" data-go="investimentos"><div class="ico">📈</div><div class="ttl">Investimentos</div><div class="desc">Caixinhas</div></div>
     <div class="card" data-go="saldos"><div class="ico">⚖️</div><div class="ttl">Saldos</div><div class="desc">Atual e projetado</div></div>
     <div class="card" data-go="graficos"><div class="ico">📊</div><div class="ttl">Gráficos</div><div class="desc">Por categoria</div></div>
@@ -249,6 +250,43 @@ th{color:var(--muted);font-weight:600}
   <div id="cc-list"></div>
 </div>
 
+<!-- ============================================================
+     VIEW: DÍVIDAS
+     ============================================================ -->
+<div class="wrap hidden" id="view-dividas">
+  <button class="back" data-back>← Voltar</button><h2 class="view">🔴 Dívidas</h2>
+
+  <!-- Formulário nova dívida -->
+  <div class="formcard"><h3 style="margin-top:0">+ Nova dívida</h3>
+    <div class="formgrid">
+      <div><label class="lbl">Nome</label><input id="dv-nome" placeholder="Ex: Empréstimo Nubank Camily"></div>
+      <div><label class="lbl">Credor (opcional)</label><input id="dv-credor" placeholder="Nubank"></div>
+      <div><label class="lbl">Valor da parcela</label><input id="dv-parc" placeholder="578,03"></div>
+      <div><label class="lbl">Nº de parcelas</label><input id="dv-qtd" placeholder="3"></div>
+      <div><label class="lbl">Dia de pagamento</label><input id="dv-dia" placeholder="16"></div>
+      <div><label class="lbl">Início (1ª parcela)</label><input id="dv-ini" type="date"></div>
+      <div><label class="lbl">Cor</label><input id="dv-cor" type="color" value="#f87171"></div>
+    </div><div class="row" style="margin-top:12px"><button id="dv-save">Criar dívida</button></div></div>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi"><h3>Total em dívidas (restante)</h3><div class="val neg" id="dv-kp-rest">R$ 0,00</div><small id="dv-kp-qtd"></small></div>
+    <div class="kpi"><h3>A pagar este mês</h3><div class="val neg" id="dv-kp-mes">R$ 0,00</div></div>
+  </div>
+
+  <!-- Toggle visão -->
+  <div class="row" style="justify-content:center"><div class="seg" id="dv-seg">
+    <button class="chip on" data-dvv="tabela">📋 Tabela</button>
+    <button class="chip" data-dvv="calendario">📅 Calendário</button></div></div>
+
+  <!-- Navbar calendário (só aparece na visão calendário) -->
+  <div class="navbar hidden" id="dv-nav"><button id="dv-prev">◀</button><div class="perlabel" id="dv-label"></div><button id="dv-next">▶</button></div>
+
+  <div id="dv-content"></div>
+</div>
+
+
+   
 <!-- ============================================================
      VIEW: INVESTIMENTOS
      ============================================================ -->
@@ -400,7 +438,7 @@ function formaTexto(l){if(l.cartao)return'💳 '+l.cartao;const p=l.pagamento||'
 /* ---- 7. NAVEGAÇÃO ---- */
 async function go(view){document.querySelectorAll('.wrap').forEach(w=>w.classList.add('hidden'))
   $('view-'+view).classList.remove('hidden');window.scrollTo(0,0);CARTOES=await db.cards()
-  ;({entradas:renderEntradas,saidas:renderSaidas,cartoes:renderCartoes,investimentos:renderInv,saldos:renderSaldos,graficos:renderGraficos,config:renderConfig,home:renderHome}[view])?.()}
+  ;({entradas:renderEntradas,saidas:renderSaidas,cartoes:renderCartoes,dividas:renderDividas,investimentos:renderInv,saldos:renderSaldos,graficos:renderGraficos,config:renderConfig,home:renderHome}[view])?.()}
 document.querySelectorAll('.card[data-go]').forEach(c=>c.onclick=()=>go(c.dataset.go))
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>go('home'))
 $('home-link').onclick=()=>go('home');$('btnCfgTop').onclick=()=>go('config')
@@ -636,6 +674,128 @@ $('cfgSave').onclick=async()=>{const url=$('cfgUrl').value.trim(),key=$('cfgKey'
   localStorage.setItem('gab_cfg',JSON.stringify({url,key}))
   alert('✅ Conectado! A página vai recarregar.');location.reload()}
 $('btn-death').onclick=async()=>{if(!confirm('APAGAR TODOS os dados? As tabelas permanecem.'))return;if(!confirm('Tem CERTEZA absoluta? Última chance!'))return;await db.wipe();alert('Tudo apagado.');location.reload()}
+
+/* ---- 16b. DÍVIDAS ---- */
+// Data layer
+Object.assign(db,{
+  async dividas(){if(supabase){const{data}=await supabase.from('dividas').select('*').order('created_at');return data||[]}return JSON.parse(localStorage.getItem('gab_div')||'[]')},
+  async addDivida(d){if(supabase){await supabase.from('dividas').insert([d])}else{const a=JSON.parse(localStorage.getItem('gab_div')||'[]');d.id=Date.now();a.push(d);localStorage.setItem('gab_div',JSON.stringify(a))}},
+  async updDivida(id,f){if(supabase){await supabase.from('dividas').update(f).eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_div')||'[]').map(x=>x.id==id?{...x,...f}:x);localStorage.setItem('gab_div',JSON.stringify(a))}},
+  async delDivida(id){if(supabase){await supabase.from('dividas').delete().eq('id',id)}else{let a=JSON.parse(localStorage.getItem('gab_div')||'[]').filter(x=>x.id!=id);localStorage.setItem('gab_div',JSON.stringify(a))}}
+})
+
+let dvView='tabela',dvRef=hoje()
+// Helpers de dívida
+function dvPagas(d){return Array.isArray(d.pagas)?d.pagas:(JSON.parse(d.pagas||'[]'))}
+function dvTotal(d){return d.valor_parcela*d.parcelas_total}
+function dvRestante(d){return d.valor_parcela*(d.parcelas_total-dvPagas(d).length)}
+function dvDataParcela(d,i){const base=d.data_inicio?new Date(d.data_inicio+'T00:00:00'):hoje()
+  const dt=new Date(base.getFullYear(),base.getMonth()+(i-1),Math.min(d.dia_pagamento||base.getDate(),28));return dt}
+function dvProxima(d){const pg=dvPagas(d);for(let i=1;i<=d.parcelas_total;i++)if(!pg.includes(i))return i;return null}
+
+// Render principal
+async function renderDividas(){
+  if(!$('dv-ini').value)$('dv-ini').valueAsDate=hoje()
+  const ds=await db.dividas()
+  // KPIs
+  const totalRest=ds.reduce((s,d)=>s+dvRestante(d),0)
+  $('dv-kp-rest').textContent=fmt(totalRest)
+  $('dv-kp-qtd').textContent=ds.filter(d=>d.status!=='quitada').length+' dívidas ativas'
+  const mesAtual=hoje().toISOString().slice(0,7)
+  let mesTot=0
+  ds.forEach(d=>{const pg=dvPagas(d);for(let i=1;i<=d.parcelas_total;i++){if(!pg.includes(i)&&dvDataParcela(d,i).toISOString().slice(0,7)===mesAtual)mesTot+=d.valor_parcela}})
+  $('dv-kp-mes').textContent=fmt(mesTot)
+  // Toggle nav
+  $('dv-nav').classList.toggle('hidden',dvView!=='calendario')
+  if(dvView==='tabela')renderDvTabela(ds);else renderDvCalendario(ds)
+}
+
+// Visão tabela
+function renderDvTabela(ds){
+  if(!ds.length){$('dv-content').innerHTML='<div class="hint">Nenhuma dívida cadastrada.</div>';return}
+  const linhas=ds.map(d=>{const pg=dvPagas(d),prox=dvProxima(d),quitada=d.status==='quitada'||pg.length>=d.parcelas_total
+    const proxData=prox?dvDataParcela(d,prox).toLocaleDateString('pt-BR'):'—'
+    return`<tr style="border-left:4px solid ${d.cor||'#f87171'}">
+      <td><b>${d.nome}</b>${d.credor?`<br><span class="hint">${d.credor}</span>`:''}</td>
+      <td>${fmt(dvTotal(d))}</td>
+      <td>${pg.length}/${d.parcelas_total}</td>
+      <td class="neg">${fmt(dvRestante(d))}</td>
+      <td>${quitada?'<span class="tag">✅ quitada</span>':proxData}</td>
+      <td><button class="mini" data-dvver="${d.id}">👁️ Ver</button>
+          <button class="del" data-dvdel="${d.id}">×</button></td></tr>`}).join('')
+  $('dv-content').innerHTML=`<table><thead><tr><th>Dívida</th><th>Total</th><th>Parcelas</th><th>Restante</th><th>Próxima</th><th></th></tr></thead><tbody>${linhas}</tbody></table>`
+  bindDvAcoes()
+}
+
+// Visão calendário (mês a mês)
+function renderDvCalendario(ds){
+  const y=dvRef.getFullYear(),m=dvRef.getMonth()
+  $('dv-label').textContent=dvRef.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})
+  const prim=new Date(y,m,1).getDay(),nd=new Date(y,m+1,0).getDate()
+  // mapeia dia -> parcelas pendentes
+  const porDia={}
+  ds.forEach(d=>{const pg=dvPagas(d);for(let i=1;i<=d.parcelas_total;i++){const dt=dvDataParcela(d,i)
+    if(dt.getFullYear()===y&&dt.getMonth()===m&&!pg.includes(i)){const dd=dt.getDate();(porDia[dd]=porDia[dd]||[]).push({d,i})}}})
+  let h=DOW.map(x=>`<div class="dow">${x}</div>`).join('')
+  for(let i=0;i<prim;i++)h+='<div class="day empty"></div>'
+  for(let dd=1;dd<=nd;dd++){const its=porDia[dd]||[],tot=its.reduce((s,x)=>s+x.d.valor_parcela,0)
+    const cards=its.map(x=>`<div class="mini" style="border-left:3px solid ${x.d.cor||'#f87171'}" data-dvver="${x.d.id}">
+      <div class="mv">${fmt(x.d.valor_parcela)}</div><div class="mt"><b>${x.d.nome}</b><br>parcela ${x.i}/${x.d.parcelas_total}</div></div>`).join('')
+    h+=`<div class="day ${its.length?'has':''}"><div class="daynum"><span>${dd}</span>${tot?`<span class="daytot">${fmt(tot)}</span>`:''}</div>${cards}</div>`}
+  $('dv-content').className='cal mes';$('dv-content').innerHTML=h
+  $('dv-content').querySelectorAll('[data-dvver]').forEach(b=>b.onclick=()=>verDivida(b.dataset.dvver))
+}
+
+// Modal "Ver dívida" com seleção de parcelas
+async function verDivida(id){
+  const ds=await db.dividas(),d=ds.find(x=>x.id==id);if(!d)return
+  const pg=dvPagas(d)
+  const linhas=Array.from({length:d.parcelas_total},(_,k)=>{const i=k+1,pago=pg.includes(i),dt=dvDataParcela(d,i).toLocaleDateString('pt-BR')
+    return`<tr><td><input type="checkbox" data-pi="${i}" ${pago?'disabled':''}></td>
+      <td>${i}/${d.parcelas_total}</td><td>${dt}</td><td>${fmt(d.valor_parcela)}</td>
+      <td>${pago?'<span class="tag">✅ paga</span>':'<span class="tag">⭕ pendente</span>'}</td></tr>`}).join('')
+  $('modal-root').innerHTML=`<div class="modal-bg"><div class="modal"><button class="close" id="dv-mclose">×</button>
+    <h3>🔴 ${d.nome}</h3>
+    <div class="kpis"><div class="kpi"><h3>Total</h3><div class="val">${fmt(dvTotal(d))}</div></div>
+      <div class="kpi"><h3>Restante</h3><div class="val neg">${fmt(dvRestante(d))}</div></div></div>
+    <p class="hint">Marque as parcelas que deseja abater (pode adiantar futuras) e clique em "Abater selecionadas".</p>
+    <table><thead><tr><th>✓</th><th>Parcela</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table>
+    <div class="row" style="margin-top:14px">
+      <button id="dv-abater">✅ Abater selecionadas</button>
+      <button class="ghost" id="dv-quitar">Quitar tudo</button>
+      <button class="danger" id="dv-excluir">Excluir dívida</button></div></div></div>`
+  const close=()=>$('modal-root').innerHTML=''
+  $('dv-mclose').onclick=close
+  document.querySelector('.modal-bg').onclick=e=>{if(e.target.classList.contains('modal-bg'))close()}
+  $('dv-abater').onclick=async()=>{const sel=[...document.querySelectorAll('#modal-root [data-pi]:checked')].map(c=>+c.dataset.pi)
+    if(!sel.length)return alert('Selecione ao menos uma parcela.')
+    const novas=[...new Set([...pg,...sel])].sort((a,b)=>a-b)
+    const quit=novas.length>=d.parcelas_total
+    await db.updDivida(id,{pagas:novas,status:quit?'quitada':'ativa'});close();renderDividas()}
+  $('dv-quitar').onclick=async()=>{if(!confirm('Marcar TODAS as parcelas como pagas?'))return
+    const todas=Array.from({length:d.parcelas_total},(_,k)=>k+1)
+    await db.updDivida(id,{pagas:todas,status:'quitada'});close();renderDividas()}
+  $('dv-excluir').onclick=async()=>{if(!confirm('Excluir esta dívida?'))return;await db.delDivida(id);close();renderDividas()}
+}
+
+function bindDvAcoes(){
+  document.querySelectorAll('[data-dvver]').forEach(b=>b.onclick=()=>verDivida(b.dataset.dvver))
+  document.querySelectorAll('[data-dvdel]').forEach(b=>b.onclick=async()=>{if(confirm('Excluir dívida?')){await db.delDivida(b.dataset.dvdel);renderDividas()}})
+}
+
+// Eventos
+$('dv-save').onclick=async()=>{const parc=parseValor($('dv-parc').value),qtd=parseInt($('dv-qtd').value)
+  if(!$('dv-nome').value.trim())return alert('Dê um nome')
+  if(!parc)return alert('Valor da parcela inválido');if(!qtd)return alert('Nº de parcelas inválido')
+  await db.addDivida({nome:$('dv-nome').value.trim(),credor:$('dv-credor').value.trim()||null,
+    valor_parcela:Number(parc.toFixed(2)),parcelas_total:qtd,pagas:[],dia_pagamento:parseInt($('dv-dia').value)||null,
+    data_inicio:$('dv-ini').value||null,ciclo:30,status:'ativa',cor:$('dv-cor').value})
+  ;['dv-nome','dv-credor','dv-parc','dv-qtd','dv-dia'].forEach(i=>$(i).value='');renderDividas()}
+document.querySelectorAll('#dv-seg .chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('#dv-seg .chip').forEach(x=>x.classList.toggle('on',x===c));dvView=c.dataset.dvv;renderDividas()})
+$('dv-prev').onclick=()=>{dvRef.setMonth(dvRef.getMonth()-1);renderDividas()}
+$('dv-next').onclick=()=>{dvRef.setMonth(dvRef.getMonth()+1);renderDividas()}
+
+   
 
 /* ---- 17. UTILS ---- */
 function bindDel(id,cb){document.querySelectorAll('#'+id+' .del').forEach(b=>b.onclick=async()=>{if(confirm('Excluir?')){await db.del(b.dataset.id);cb()}})}
