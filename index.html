@@ -152,13 +152,17 @@ th{color:var(--muted);font-weight:600}
 [data-device="mobile"] .hello{font-size:20px}
 [data-device="mobile"] table{display:block;overflow-x:auto;white-space:nowrap}
 
-/* ---- 14. AJUSTE DE TAMANHO DO CALENDÁRIO ---- */
-.cal.mes .day{min-height:var(--calh,92px)}
-.cal.semana .day{min-height:calc(var(--calh,92px) * 1.6)}
+/* ---- 14. CALENDÁRIO REDESENHADO ---- */
+.cal.mes,.cal.semana{grid-template-columns:repeat(auto-fit,minmax(var(--calw,130px),1fr));gap:10px}
+.cal.mes .day,.cal.semana .day{min-height:var(--calh,120px);padding:0;overflow:hidden;display:flex;flex-direction:column}
+.cal .day .dhead{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-bottom:1px solid var(--line)}
+.cal .day .dnum{font-weight:700;font-size:15px;background:var(--card);border:1px solid var(--line);border-radius:8px;min-width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.cal .day.has .dnum{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cal .day .dname{font-size:11px;color:var(--muted);font-weight:600;text-transform:capitalize}
+.cal .day .dbody{padding:6px 8px;flex:1}
+.cal .day .dtot{font-size:11px;color:var(--red);font-weight:700;margin-left:6px}
 #s-cal{margin-bottom:60px}
-[data-device="mobile"] .cal.mes .day,[data-device="mobile"] .cal .day{min-height:var(--calh,92px);font-size:11px;padding:5px}
-[data-device="mobile"] .cal .daynum{font-size:12px}
-[data-device="mobile"] .cal.mes,[data-device="mobile"] .cal.semana{gap:4px}
+[data-device="mobile"] .cal.mes,[data-device="mobile"] .cal.semana{grid-template-columns:repeat(auto-fit,minmax(var(--calw,150px),1fr))}
 
 </style>
 </head>
@@ -228,7 +232,7 @@ th{color:var(--muted);font-weight:600}
   </div><div class="row" style="margin-top:12px"><button id="s-save">Registrar saída</button></div></div>
     <div class="row" style="justify-content:center;margin-bottom:10px">
     <span class="hint">Tamanho dos dias:</span>
-    <input type="range" id="cal-scale" min="60" max="200" step="10" value="92" style="max-width:200px">
+    <input type="range" id="cal-scale" min="110" max="240" step="10" value="130" style="max-width:200px">
   </div>
   <div class="row" style="justify-content:center"><div class="seg" id="seg-per">
     <button class="chip" data-per="dia">Dia</button><button class="chip" data-per="semana">Semana</button>
@@ -354,6 +358,13 @@ th{color:var(--muted);font-weight:600}
   <div class="formcard"><h3 style="margin-top:0">Seu nome</h3>
     <div class="row"><input id="cfg-nome" placeholder="Gabriel" style="flex:1"><button id="cfg-nome-save">Salvar</button></div></div>
   <div class="formcard"><h3 style="margin-top:0">Tamanho dos cards da Home</h3>
+      <div class="formcard"><h3 style="margin-top:0">Início da semana</h3>
+    <div class="row">
+      <select id="cfg-weekstart" style="flex:1">
+        <option value="0">Domingo</option>
+        <option value="1">Segunda-feira</option>
+      </select></div>
+    <div class="hint">Afeta a visualização semanal/mensal das Saídas.</div></div>
     <input type="range" id="cfg-scale" min="0.8" max="1.5" step="0.05" value="1">
     <div class="hint">Arraste para deixar os cards maiores ou menores. Salva automaticamente.</div></div>
   <div class="formcard"><h3 style="margin-top:0">Conexão Supabase</h3>
@@ -530,8 +541,11 @@ $('e-save').onclick=async()=>{const valor=parseValor($('e-valor').value);if(!val
 
 /* ---- 11. SAÍDAS / CALENDÁRIO ---- */
 // Escala do calendário (salva em localStorage)
-function applyCalScale(){document.documentElement.style.setProperty('--calh',(localStorage.getItem('gab_calscale')||'92')+'px')}
+function applyCalScale(){const v=localStorage.getItem('gab_calscale')||'130'
+  document.documentElement.style.setProperty('--calw',v+'px')
+  document.documentElement.style.setProperty('--calh',(v*0.92)+'px')}
 applyCalScale()
+function weekStart(){return parseInt(localStorage.getItem('gab_weekstart')||'0')} // 0=domingo,1=segunda
 let perTipo='mes',perRef=hoje()
 function rangePeriodo(){const r=new Date(perRef),y=r.getFullYear(),m=r.getMonth(),d=r.getDate();let ini,fim,label
   if(perTipo==='dia'){ini=fim=new Date(y,m,d);label=r.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}
@@ -553,14 +567,20 @@ async function renderSaidas(){fillSelect($('s-cat'),CATEGORIAS);fillSelect($('s-
   $('s-total').textContent=fmt(all.reduce((s,l)=>s+ +l.valor,0));$('s-count').textContent=all.length+' lançamentos'
   const cont=$('s-cal');cont.className='cal '+perTipo
   const dstr=(yy,mm,dd)=>`${yy}-${String(mm+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`
-  if(perTipo==='mes'){const prim=new Date(y,m,1).getDay(),nd=new Date(y,m+1,0).getDate()
-    let h=DOW.map(x=>`<div class="dow">${x}</div>`).join('');for(let i=0;i<prim;i++)h+='<div class="day empty"></div>'
-    for(let dd=1;dd<=nd;dd++){const ds=dstr(y,m,dd),it=all.filter(l=>l.data===ds),tot=it.reduce((s,l)=>s+ +l.valor,0)
-      h+=`<div class="day ${it.length?'has':''}" data-day="${ds}"><div class="daynum"><span>${dd}</span>${tot?`<span class="daytot">${fmt(tot)}</span>`:''}</div>${it.slice(0,3).map(miniCard).join('')}${it.length>3?`<div class="hint">+${it.length-3} mais</div>`:''}</div>`}
+if(perTipo==='mes'){const nd=new Date(y,m+1,0).getDate()
+    const ws=weekStart() // 0=domingo, 1=segunda
+    const prim=(new Date(y,m,1).getDay()-ws+7)%7
+    let h='';for(let i=0;i<prim;i++)h+='<div class="day empty"></div>'
+    for(let dd=1;dd<=nd;dd++){const ds=dstr(y,m,dd),dt=new Date(y,m,dd),it=all.filter(l=>l.data===ds),tot=it.reduce((s,l)=>s+ +l.valor,0)
+      h+=`<div class="day ${it.length?'has':''}" data-day="${ds}">
+        <div class="dhead"><span class="dnum">${dd}</span><span class="dname">${DOW[dt.getDay()]}${tot?`<span class="dtot">${fmt(tot)}</span>`:''}</span></div>
+        <div class="dbody">${it.slice(0,3).map(miniCard).join('')}${it.length>3?`<div class="hint">+${it.length-3} mais</div>`:''}</div></div>`}
     cont.innerHTML=h}
   else if(perTipo==='semana'){const base=new Date(ini+'T00:00:00');let h=''
     for(let i=0;i<7;i++){const day=new Date(base);day.setDate(base.getDate()+i);const ds=day.toISOString().slice(0,10),it=all.filter(l=>l.data===ds),tot=it.reduce((s,l)=>s+ +l.valor,0)
-      h+=`<div class="day ${it.length?'has':''}" data-day="${ds}"><div class="daynum"><span>${DOW[day.getDay()]} ${day.getDate()}</span>${tot?`<span class="daytot">${fmt(tot)}</span>`:''}</div>${it.map(miniCard).join('')}</div>`}
+      h+=`<div class="day ${it.length?'has':''}" data-day="${ds}">
+        <div class="dhead"><span class="dnum">${day.getDate()}</span><span class="dname">${DOW[day.getDay()]}${tot?`<span class="dtot">${fmt(tot)}</span>`:''}</span></div>
+        <div class="dbody">${it.map(miniCard).join('')}</div></div>`}
     cont.innerHTML=h}
   else if(perTipo==='dia'){const it=all.sort((a,b)=>(a.hora||'99').localeCompare(b.hora||'99'));cont.innerHTML=`<div class="day has">${diaDetalheHtml(it)}</div>`}
   else{let h='';for(let mm=0;mm<12;mm++){const it=all.filter(l=>+l.data.slice(5,7)===mm+1),tot=it.reduce((s,l)=>s+ +l.valor,0)
@@ -687,9 +707,13 @@ async function renderConfig(){
   if(!supabase){$('conn-status').textContent='🔴 modo local (dados só neste navegador)';return}
   $('conn-status').textContent='🟡 testando conexão...'
   const r=await testarConexao(cfg.url,cfg.key)
-  $('conn-status').textContent=r.ok?'🟢 conectado ao Supabase':'🔴 erro: '+r.msg}
+  $('conn-status').textContent=r.ok?'🟢 conectado ao Supabase':'🔴 erro: '+r.msg
+  $('cfg-weekstart').value=localStorage.getItem('gab_weekstart')||'0'
+}
 $('cfg-nome-save').onclick=async()=>{await db.setCfg('nome',$('cfg-nome').value.trim()||'Gabriel');alert('Salvo!');renderHome()}
-$('cfg-scale').oninput=()=>{localStorage.setItem('gab_cardscale',$('cfg-scale').value);applyScale()}
+$('cfg-scale').oninput=()=>{localStorage.setItem('gab_cardscale',$('cfg-scale').value);applyScale()
+$('cfg-weekstart').onchange=()=>{localStorage.setItem('gab_weekstart',$('cfg-weekstart').value)}
+}
 $('cfgTest').onclick=async()=>{const url=$('cfgUrl').value.trim(),key=$('cfgKey').value.trim()
   if(!url||!key)return alert('Preencha URL e key');$('conn-status').textContent='🟡 testando...'
   const r=await testarConexao(url,key);$('conn-status').textContent=r.ok?'🟢 conexão OK! Pode salvar.':'🔴 '+r.msg}
